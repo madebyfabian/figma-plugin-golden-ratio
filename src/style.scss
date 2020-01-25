@@ -1,0 +1,174 @@
+@import url('https://rsms.me/inter/inter.css');
+
+@mixin buttonReset {
+  -webkit-appearance: none;
+  outline: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+:root {
+  --figma-color--border: #e5e5e5;
+  --figma-color--hover: #f0f0f0;
+  --figma-color--base: #333;
+  --figma-color--base-light: #b3b3b3;
+
+  // own variables
+  --button-rotate: -90deg;
+  --button-shadow--base: 0 2px 2px rgba(0,0,0,.1), 0 10px 20px rgba(0,0,0,.07), 0 -2px 4px rgba(0,0,0,.04);
+}
+
+html { 
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+}
+
+*, *::after, *::before {
+  box-sizing: border-box;
+  user-select: none;
+  font-size: 11px;
+  color: var(--figma-color--base);
+}
+
+body {
+  margin: 1rem;
+  padding: 0;
+  background: #fff;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.row {
+  margin-bottom: 2rem;
+}
+
+.items {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 1.5rem;
+
+  button.item {
+    @include buttonReset;
+    border-radius: .5rem;
+    background: #fff;
+    cursor: pointer;
+    height: 120px;
+    transition: box-shadow .15s ease;
+    box-shadow: var(--button-shadow--base);
+
+    &:hover {
+      box-shadow: 0 4px 4px rgba(0,0,0,.1),
+                  0 20px 50px rgba(0,0,0,.15),
+                  0 -2px 4px rgba(0,0,0,.04)
+    }
+
+    &:active {
+      transition: transform .1s ease!important;
+      transform: translateY(2px);
+      box-shadow: var(--button-shadow--base);
+    }
+
+    svg {
+      transform: rotate(var(--button-rotate));
+    }
+  }
+}
+
+p {
+  font-weight: 400;
+  line-height: 1rem;
+  margin: 0 0 .75rem;
+}
+
+.bottom-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border-top: 1px solid var(--figma-color--border);
+  border-bottom: 1px solid transparent;
+  margin: 0 -1rem -1rem;
+
+  &__item-wrap {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    
+    height: 2.5rem;
+
+    &:first-child {
+      padding: 0 1rem;
+      // will be released in v5: border-right: 1px solid var(--figma-color--border);
+    }
+
+    span {
+      display: block;
+      padding-left: 10px;
+    }
+  }
+}
+
+input.switch, 
+button.toggle-rotation {
+  @include buttonReset;
+}
+
+input.switch {
+  --active: #000;
+  --active-inner: #fff;
+  --input-border: #000;
+  
+  -webkit-appearance: none;
+  outline: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+  border: 1px solid var(--input-border)!important;
+  width: 24px;
+  height: 12px;
+  border-radius: 11px;
+  transition: background-color .2s ease;
+  
+  &:after {
+    content: '';
+    display: block;
+    left: -1px; // hack
+    top: -1px; // hack
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    border: 1px solid var(--input-border);
+    transition: transform .2s ease;
+    background: #fff;
+  }
+
+  &:not(:checked) + span {
+    color: var(--figma-color--base-light);
+  }
+  
+  &:checked {
+    background-color: var(--active);
+    
+    &:after {
+      transform: translateX(12px);
+    }
+  }
+}
+
+button.toggle-rotation {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0 1rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+
+  span {
+    padding-left: 2px;
+  }
+}
