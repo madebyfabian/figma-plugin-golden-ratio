@@ -6,10 +6,7 @@ const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 // added by me
-const CopyPlugin = require('copy-webpack-plugin');
-
-console.log(process.env.NODE_ENV)
-
+const CopyPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   mode: (process.env.NODE_ENV === 'production') ? 'production' : 'development',
