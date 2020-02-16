@@ -23,3 +23,6 @@ Changed description
 
 ### v7
 Changed API version to V12 and did a few general bugfixes & improvements. @ 16. February 2020
+
+### v8
+Bugfix when you click "Rotate direction" immediately after plugin launch.

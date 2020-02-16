@@ -30,7 +30,7 @@ const roundNumber = async (num) => {
  * @param {Number} pos The new position
  * @param {Boolean} widerThanHigh Indicates whether the parent frame is wider than high or the other way.
  */
-const setPos = async (node, pos, widerThanHigh) => {
+const setNodePos = async (node, pos, widerThanHigh) => {
 	// Imagine, the parent node of the curr selected el is a group. And this group is not on position x = 0, y = 0 on the frame. So, that's why we are adding node.parent.x / y here
 	if (widerThanHigh) 
 		node.x = pos + ((node.parent.type === 'GROUP') ? node.parent.x : 0)
@@ -40,12 +40,21 @@ const setPos = async (node, pos, widerThanHigh) => {
 
 
 /**
- * Check if the parent frame is wider than high.
+ * Check if the parent frame of a node is wider than high.
  */
 const checkWiderThanHigh = () => {
 	// If the user has manually rotated the direction since the plugin opened
 	if (manuallyRotatedDirection)
 		return
+
+	if (!figma.currentPage.selection.length) {
+		currSelParentWiderThanHigh = false
+
+		return figma.ui.postMessage({ 
+			type: NAMES.automaticallyRotateDirection, 
+			value: currSelParentWiderThanHigh
+		})
+	}
 
 	for (const node of figma.currentPage.selection) {
 		switch (node.parent.type) {
@@ -154,7 +163,7 @@ figma.ui.onmessage = async (msg) => {
 												? await roundNumber(newPos)
 												: Math.round(newPos)
 
-								setPos(node, newPosRounded, nodeParentWiderThanHigh)
+								setNodePos(node, newPosRounded, nodeParentWiderThanHigh)
 
 								break
 							}
@@ -171,7 +180,7 @@ figma.ui.onmessage = async (msg) => {
 											newPos = getNewAmount - (((nodeParentWiderThanHigh) ? node.width : node.height) / 2),
 											newPosRounded = await roundNumber(newPos)
 
-								setPos(node, newPosRounded, nodeParentWiderThanHigh)
+								setNodePos(node, newPosRounded, nodeParentWiderThanHigh)
 
 								break
 							}
