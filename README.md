@@ -7,4 +7,4 @@ v3: Bugfix caused by v2 @ 01. September 2019
 v4: Corrected typo in description @ 01. September 2019
 v5: Added new Option to rotate the direction, Improved Round-by-8px Option, Added Support for Slice-Items, General performance Improvements @ 17. November 2019
 v6: Changed description
-v7: Changed API version to V12
+v7: Changed API version to V12 and did a few general bugfixes & improvements.
