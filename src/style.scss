@@ -38,6 +38,23 @@ body {
   background: #fff;
   overflow: hidden;
   transform: translateZ(0);
+
+  &.is-loading {
+    position: relative;
+
+    &::after {
+      content: 'Loading...';
+      position: absolute;
+      background: #fff;
+      height: calc(100% + 1rem);
+      width: calc(100% + 1rem * 2);
+      left: -1rem;
+      top: -1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
 }
 
 .row {

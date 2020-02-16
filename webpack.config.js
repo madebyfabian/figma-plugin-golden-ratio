@@ -13,8 +13,8 @@ module.exports = {
   // force not using 'eval' which doesn't recognize __html__ and other globals
   devtool: (process.env.NODE_ENV === 'production') ? '' : 'inline-source-map',
   entry: {
-    main: './src/main.entry.ts',
-    ui: './src/ui.entry.js',
+    main: './src/main.ts',
+    ui: './src/ui.js',
   },
   output: {
     filename: '[name].js',

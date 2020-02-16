@@ -1,19 +1,15 @@
-import error from './functions/error.js'
-
-// v1: Written at Figma Plugins API Version 1.1.0 @ 24. August 2019
-// v2: Updated description and added new feature roundBy8pxGrid @ 01. September 2019
-// v3: Bugfix caused by v2 @ 01. September 2019
-// v4: Corrected typo in description @ 01. September 2019
-// v5: Added new Option to rotate the direction, Improved Round-by-8px Option, Added Support for Slice-Items, General performance Improvements @ 17. November 2019
-// v6: Changed description
-// v7: 
+import error from './helpers/error.js'
+import { NAMES, VALUES } from './helpers/store'
 
 
-// Needs to be globally available
-const goldenRatio 			= 0.61803398874989,
-			allowedNodeTypes 	= ['RECTANGLE', 'GROUP', 'COMPONENT', 'INSTANCE', 'VECTOR', 'STAR', 'LINE', 'ELLIPSE', 'POLYGON', 'TEXT', 'FRAME', 'SLICE']
+figma.showUI(__html__, { 
+	width: 296, 
+	height: 417
+})
+
 		
-	let currSelParentWiderThanHigh = null
+let currSelParentWiderThanHigh = null,
+		manuallyRotatedDirection = false
 
 	
 /**
@@ -21,9 +17,10 @@ const goldenRatio 			= 0.61803398874989,
  */
 const roundNumber = async (num) => {
 	// if setting is set to true, round it to 8px Grid, if not just normally round it to the next pixel
-	return (await figma.clientStorage.getAsync('setting_roundBy8px')) 
-		? Math.round(num / 8) * 8 
-		: Math.round(num)
+	const roundBy8px = await figma.clientStorage.getAsync(NAMES.userSettings.roundBy8px)
+	return roundBy8px 
+					? (Math.round(num / 8) * 8) 
+					: Math.round(num)
 }
 
 
@@ -42,23 +39,21 @@ const setPos = async (node, pos, widerThanHigh) => {
 }
 
 
-figma.showUI(__html__, { 
-	width: 296, 
-	height: 417
-})
-
-
 /**
  * Check if the parent frame is wider than high.
  */
 const checkWiderThanHigh = () => {
+	// If the user has manually rotated the direction since the plugin opened
+	if (manuallyRotatedDirection)
+		return
+
 	for (const node of figma.currentPage.selection) {
 		switch (node.parent.type) {
 			case 'FRAME': case 'GROUP': case 'COMPONENT': {
 				currSelParentWiderThanHigh = (node.parent.width - node.parent.height >= 0)
 
 				figma.ui.postMessage({ 
-					type: 'widerThanHigh', 
+					type: NAMES.automaticallyRotateDirection, 
 					value: currSelParentWiderThanHigh
 				})
 
@@ -69,10 +64,7 @@ const checkWiderThanHigh = () => {
 }
 
 
-/**
- * On change of the current selection
- */
-figma.on("selectionchange", () => { 
+figma.on('selectionchange', () => { 
 	checkWiderThanHigh()
 });
 
@@ -83,10 +75,10 @@ figma.on("selectionchange", () => {
 (async () => {
 	checkWiderThanHigh()
 
-	// check the setting_roundBy8px and send the current setting back to UI
+	// check the round by 8px setting and send the current setting back to UI
 	figma.ui.postMessage({ 
-		type: 'sync__setting_roundBy8px', 
-		value: await figma.clientStorage.getAsync('setting_roundBy8px')
+		type: NAMES.userSettings.roundBy8px, 
+		value: await figma.clientStorage.getAsync(NAMES.userSettings.roundBy8px)
 	})
 })()
 
@@ -97,27 +89,22 @@ figma.on("selectionchange", () => {
 figma.ui.onmessage = async (msg) => {
 	switch (msg.type) {
 		// If user changes the "Round by 8px" setting
-		case 'setting_roundBy8px': {
-			await figma.clientStorage.setAsync('setting_roundBy8px', msg.action)
+		case NAMES.userSettings.roundBy8px: {
+			await figma.clientStorage.setAsync(NAMES.userSettings.roundBy8px, msg.action)
 			break
 		}
 
 
 		// If user clicks on "Change rotate direction button"
-		case 'setting_rotateDirection': {
+		case NAMES.manuallyRotateDirection: {
 			currSelParentWiderThanHigh = !currSelParentWiderThanHigh
-
-			figma.ui.postMessage({ 
-				type: 'widerThanHigh', 
-				value: currSelParentWiderThanHigh
-			})
-
+			manuallyRotatedDirection = true
 			break
 		}
 
 
 		// User clicked on one of the options.
-		case 'doAction': {
+		case NAMES.doAction: {
 			const currSel	= figma.currentPage.selection 
 
 			if (currSel.length === 0) {
@@ -127,7 +114,7 @@ figma.ui.onmessage = async (msg) => {
 			}
 
 			for (const node of currSel) {
-				if (!allowedNodeTypes.includes(node.type)) {
+				if (!VALUES.allowedNodeTypes.includes(node.type)) {
 					// The user's selected node type is NOT allowed.
 					error('NODE_IS_INVALID', { type: node.type })
 					break
@@ -151,8 +138,8 @@ figma.ui.onmessage = async (msg) => {
 							case 'RESIZE_TOP':
 							case 'RESIZE_BOTTOM': {
 								const newSize = (msg.action === 'RESIZE_TOP') 
-									? await roundNumber(getBase * goldenRatio) 
-									: Math.round(getBase * goldenRatio)
+									? await roundNumber(getBase * VALUES.goldenRatio) 
+									: Math.round(getBase * VALUES.goldenRatio)
 	
 								// resize the node
 								const nodeNewWidth = (nodeParentWiderThanHigh) ? newSize : node.width,
@@ -174,7 +161,7 @@ figma.ui.onmessage = async (msg) => {
 
 							case 'ALIGN_TOP':
 							case 'ALIGN_BOTTOM': {
-								const modifiedGoldenRatio = (msg.action === 'ALIGN_TOP') ? (1 - goldenRatio) : goldenRatio
+								const modifiedGoldenRatio = (msg.action === 'ALIGN_TOP') ? (1 - VALUES.goldenRatio) : VALUES.goldenRatio
 								const newAmount = getBase * modifiedGoldenRatio
 
 								// reposition the node
@@ -202,6 +189,6 @@ figma.ui.onmessage = async (msg) => {
 			} // end for ... of ... loop
 
 			break
-		} // end case 'doAction'
+		}
 	} // end switch msg.type
 } // end figma.ui.onMessage()
