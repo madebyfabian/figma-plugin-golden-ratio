@@ -1,72 +1,93 @@
-const process = require('process');
-const path = require('path');
+const path      = require('path')
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// Plugins
+const HtmlWebpackPlugin = require('html-webpack-plugin'),
+      HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin'),
+      WebpackMessages = require('webpack-messages'),
+      MiniCssExtractPlugin = require('mini-css-extract-plugin'),
+      CopyPlugin = require('copy-webpack-plugin') // added by me
 
-// added by me
-const CopyPlugin = require('copy-webpack-plugin')
 
-module.exports = (env, argv) => {
-  return {
-    mode: (argv.mode === 'production') ? 'production' : 'development',
-    // force not using 'eval' which doesn't recognize __html__ and other globals
-    devtool: (argv.mode === 'production') ? '' : 'inline-source-map',
-    entry: {
-      main: './src/main.ts',
-      ui: './src/ui.js',
-    },
-    output: {
-      filename: '[name].js',
-      path: path.join(process.cwd(), './dist'),
-    },
-    module: {
-      rules: [
-        // JS and TS
-        {
-          test: /\.jsx?$/,
-          exclude: /node_modules/,
-          use: [
-            'babel-loader',
-          ]
-        },
-        {
-          test: /\.tsx?$/,
-          exclude: /node_modules/,
-          use: [
-            'babel-loader',
-            'ts-loader'
-          ]
-        },
-        // CSS and SCSS
-        {
-          test: /\.s?css$/,
-          use: [
-            MiniCssExtractPlugin.loader,
-            'css-loader',
-            'sass-loader',
-          ]
-        },
-      ]
-    },
-    resolve: {
-      extensions: ['.js', '.jsx', '.ts', '.tsx', '.scss', '.html',],
-    },
-    plugins: [
-      new MiniCssExtractPlugin({filename: '[name].css'}),
-      new HtmlWebpackPlugin({
-        filename: 'ui.html',
-        template: './src/ui.html',
-        inlineSource: '.(js|css)$',
-        chunks: ['ui'],
-      }),
-      new HtmlWebpackInlineSourcePlugin(),
+
+console.clear()
+
+module.exports = (env, argv) => ({
+  mode: (argv.mode === 'production') ? 'production' : 'development',
+
+  // This is necessary because Figma's 'eval' works differently than normal eval
+  devtool: argv.mode === 'production' ? false : 'inline-source-map',
+
+  stats: false,
   
-      // added by me
-      new CopyPlugin([
-        { from: './src/manifest.json', to: './manifest.json' },
-      ])
-    ],  
-  }
-}
+  entry: {
+    main: './src/main.ts',
+    ui: './src/ui.js',
+  },
+  
+  output: {
+    filename: '[name].js',
+    path: path.join(__dirname, 'build'),
+  },
+
+  module: {
+    rules: [
+      // JS and TS
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        use: [
+          'babel-loader',
+        ]
+      },
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          'babel-loader',
+          'ts-loader'
+        ]
+      },
+      // CSS and SCSS
+      {
+        test: /\.s?css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'sass-loader',
+        ]
+      },
+    ]
+  },
+
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.scss', '.html',],
+  },
+
+  plugins: [
+    new MiniCssExtractPlugin({filename: '[name].css'}),
+    new HtmlWebpackPlugin({
+      filename: 'ui.html',
+      template: './src/ui.html',
+      inlineSource: '.(js|css)$',
+      chunks: ['ui'],
+    }),
+    new HtmlWebpackInlineSourcePlugin(),
+    new WebpackMessages(),
+
+    // added by me
+    new CopyPlugin([
+      { 
+        from: './src/manifest.json',
+        to: './manifest.json',
+        transform: (content, path) => {
+					try {
+						const str = content.toString().replace('__STATE__', (argv.mode === 'production' ? '🚀 PROD' : '⚙️ DEV'))
+						return Buffer.from(str)
+					} catch (error) {
+						console.error(error)
+					}
+        } 
+      },
+    ])
+  ],  
+})
