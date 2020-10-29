@@ -8,6 +8,5 @@ export const NAMES = {
 }
 
 export const VALUES = {
-  goldenRatio: 0.61803398874989,
-  allowedNodeTypes: ['RECTANGLE', 'GROUP', 'COMPONENT', 'INSTANCE', 'VECTOR', 'STAR', 'LINE', 'ELLIPSE', 'POLYGON', 'TEXT', 'FRAME', 'SLICE']
+  goldenRatio: 0.61803398874989
 }

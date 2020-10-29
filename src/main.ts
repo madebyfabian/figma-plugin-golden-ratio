@@ -115,7 +115,6 @@ figma.ui.onmessage = async (msg) => {
 		// User clicked on one of the options.
 		case NAMES.doAction: {
 			const currSel	= figma.currentPage.selection 
-
 			if (currSel.length === 0) {
 				// User hasn't selected any node.
 				error('NO_ITEM_SELECTED')
@@ -123,12 +122,6 @@ figma.ui.onmessage = async (msg) => {
 			}
 
 			for (const node of currSel) {
-				if (!VALUES.allowedNodeTypes.includes(node.type)) {
-					// The user's selected node type is NOT allowed.
-					error('NODE_IS_INVALID', { type: node.type })
-					break
-				} 
-
 				switch (node.parent.type) {
 					case 'FRAME':
 					case 'GROUP': 
