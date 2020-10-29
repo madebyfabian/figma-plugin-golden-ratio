@@ -75,19 +75,17 @@ module.exports = (env, argv) => ({
     new WebpackMessages(),
 
     // added by me
-    new CopyPlugin([
-      { 
-        from: './src/manifest.json',
-        to: './manifest.json',
-        transform: (content, path) => {
-					try {
-						const str = content.toString().replace('__STATE__', (argv.mode === 'production' ? '🚀 PROD' : '⚙️ DEV'))
-						return Buffer.from(str)
-					} catch (error) {
-						console.error(error)
-					}
-        } 
-      },
-    ])
+    new CopyPlugin({ patterns: [{
+      from: './src/manifest.json',
+      to: './manifest.json',
+      transform: (content, path) => {
+        try {
+          const str = content.toString().replace('__STATE__', (argv.mode === 'production' ? '🚀 PROD' : '⚙️ DEV'))
+          return Buffer.from(str)
+        } catch (error) {
+          console.error(error)
+        }
+      } 
+    }]})
   ],  
 })
